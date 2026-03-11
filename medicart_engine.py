@@ -12,9 +12,7 @@ from itertools import combinations
 from collections import defaultdict, Counter
 import copy
 
-# ─────────────────────────────────────────────
 # 1. DATA LOADING & CLEANING
-# ─────────────────────────────────────────────
 
 def load_transactions(filepath):
     df = pd.read_csv(filepath)
@@ -34,9 +32,7 @@ def get_item_stats(transactions):
     counts = Counter(all_items)
     return counts
 
-# ─────────────────────────────────────────────
 # 2. FP-GROWTH IMPLEMENTATION
-# ─────────────────────────────────────────────
 
 class FPNode:
     def __init__(self, item, count=0, parent=None):
@@ -125,9 +121,7 @@ def fp_growth(transactions, min_support_count, prefix=None, frequent_itemsets=No
 
     return frequent_itemsets
 
-# ─────────────────────────────────────────────
-# 3. APRIORI (for small/sparse datasets)
-# ─────────────────────────────────────────────
+# 3. APRIORI (for small datasets)
 
 def apriori(transactions, min_support_count):
     item_counts = Counter()
@@ -158,9 +152,7 @@ def apriori(transactions, min_support_count):
 
     return frequent_itemsets
 
-# ─────────────────────────────────────────────
-# 4. HYBRID SELECTOR
-# ─────────────────────────────────────────────
+# 4. HYBRID APPROACH SELECTOR
 
 def mine_frequent_itemsets(transactions, min_support_count):
     n = len(transactions)
@@ -174,9 +166,7 @@ def mine_frequent_itemsets(transactions, min_support_count):
         itemsets = apriori(transactions, min_support_count)
     return itemsets, method
 
-# ─────────────────────────────────────────────
 # 5. ASSOCIATION RULES
-# ─────────────────────────────────────────────
 
 def generate_rules(frequent_itemsets, transactions, min_confidence):
     n = len(transactions)
@@ -217,9 +207,7 @@ def generate_rules(frequent_itemsets, transactions, min_confidence):
 
     return rules
 
-# ─────────────────────────────────────────────
 # 6. CUSTOM RULE SCORING
-# ─────────────────────────────────────────────
 
 def score_rule(rule, w_lift=0.4, w_conf=0.35, w_sup=0.25):
     """Weighted composite score for rule ranking"""
@@ -234,12 +222,10 @@ def score_all_rules(rules):
         r['score'] = score_rule(r)
     return sorted(rules, key=lambda x: x['score'], reverse=True)
 
-# ─────────────────────────────────────────────
 # 7. AUTO-THRESHOLD TUNING
-# ─────────────────────────────────────────────
 
 def auto_tune_thresholds(transactions, target_rules=30, target_itemsets=50):
-    """Automatically find minsup/minconf that yield quality rule count"""
+
     n = len(transactions)
     sup_candidates = [0.02, 0.03, 0.05, 0.07, 0.10, 0.15]
     conf_candidates = [0.3, 0.4, 0.5, 0.6, 0.7]
@@ -262,9 +248,7 @@ def auto_tune_thresholds(transactions, target_rules=30, target_itemsets=50):
 
     return best_sup, best_conf
 
-# ─────────────────────────────────────────────
 # 8. DRIFT DETECTION
-# ─────────────────────────────────────────────
 
 def detect_drift(rules_v1, rules_v2, threshold=0.15):
     """Detect rules whose support shifted significantly between iterations"""
@@ -303,9 +287,7 @@ def detect_drift(rules_v1, rules_v2, threshold=0.15):
         'dropped_count': len(dropped_rules)
     }
 
-# ─────────────────────────────────────────────
 # 9. RECOMMENDATIONS ENGINE
-# ─────────────────────────────────────────────
 
 def get_homepage_ranking(frequent_itemsets, transactions):
     n = len(transactions)
@@ -404,9 +386,7 @@ def get_shelf_placement(frequent_itemsets, transactions):
     suggestions.sort(key=lambda x: x['co_purchases'], reverse=True)
     return suggestions[:8]
 
-# ─────────────────────────────────────────────
 # 10. VERSION CACHE
-# ─────────────────────────────────────────────
 
 VERSION_CACHE = {}
 
@@ -426,9 +406,7 @@ def save_version(season, iteration, rules, itemsets, thresholds, transactions):
     }
     return key
 
-# ─────────────────────────────────────────────
 # 11. FULL PIPELINE RUN
-# ─────────────────────────────────────────────
 
 def run_pipeline(season_name, transactions, iteration, prev_rules=None):
     n = len(transactions)
@@ -484,13 +462,7 @@ def run_pipeline(season_name, transactions, iteration, prev_rules=None):
 
     return result
 
-# ─────────────────────────────────────────────
-# 12. MAIN EXECUTION
-# ─────────────────────────────────────────────
-
-# ─────────────────────────────────────────────
 # 13. SQLITE SAVE FUNCTION
-# ─────────────────────────────────────────────
 
 def save_to_sqlite(all_results, db_path):
     import sqlite3
